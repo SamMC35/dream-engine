@@ -236,9 +236,41 @@ bool done()		//Checks if the quit is pressed
         return false;
 }
 
+
+
+
+void Render(int fps)		//Renders the current stack
+{
+	//system("clear");
+    int Scr_fps = 1000/fps;
+    capTimer.start();
+    SDL_GetMouseState(&mouse_pos_x, &mouse_pos_y);
+    SDL_RenderPresent(renderer);
+    Mix_FreeMusic(music);
+    Mix_FreeChunk(audio);
+
+    float avgFPS = countedFrames/(fpsTimer.getTicks()/ 1000.f);
+    if( avgFPS > 2000000 )
+    {
+        avgFPS = 0;
+    }
+    //cout << avgFPS <<endl;
+    int frameTicks = capTimer.getTicks();
+
+
+    if(frameTicks <= Scr_fps)
+    {
+      //cout<<Scr_fps-frameTicks<<endl;
+      SDL_Delay(Scr_fps - frameTicks);
+    }
+     ++countedFrames;
+  //SDL_Delay(1000/fps);
+//   cout<<"fuck";
+}
+
 bool PointInRect(int x, int y, tuple <int,int,int,int> r1)
 {
-    if(x > get<0>(r1) && x < get<0>(r1)+get<2>(r1) && y > get<1>(r1) && y < get<1>(r1)+get<3>(r1))
+    if(x >= get<0>(r1) && x <= get<0>(r1)+get<2>(r1) && y >= get<1>(r1) && y <= get<1>(r1)+get<3>(r1))
         return true;
     else
         return false;
@@ -250,31 +282,6 @@ bool Col_Check(tuple <int,int,int,int> r1, tuple <int,int,int,int> r2)
         return true;
     else
         return false;
-}
-
-void Render(int fps)		//Renders the current stack
-{
-    int Scr_fps = 1000/fps;
-
-    SDL_GetMouseState(&mouse_pos_x, &mouse_pos_y);
-    SDL_RenderPresent(renderer);
-    Mix_FreeMusic(music);
-    Mix_FreeChunk(audio);
-    capTimer.start();
-    ++countedFrames;
-    float avgFPS = countedFrames/(fpsTimer.getTicks()/ 1000.f);
-    cout << avgFPS <<endl;
-    int frameTicks = capTimer.getTicks();
-
-
-    if(frameTicks <= TPS)
-    {
-      cout<<Scr_fps-frameTicks<<endl;
-      SDL_Delay(Scr_fps - frameTicks);
-    }
-
-  //SDL_Delay(1000/fps);
-//   cout<<"fuck";
 }
 
 void CloseWindow()	//Closes the window
