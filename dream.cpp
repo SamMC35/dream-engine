@@ -25,8 +25,7 @@ SDL_GameController  *game_controller[2];
 SDL_Event  event;
 SDL_Event event_joy;
 
-Mix_Chunk *audio = NULL;
-Mix_Music *music = NULL;
+Mix_Chunk *audio;
 
 const Uint8* inkeys =  SDL_GetKeyboardState(NULL);
 //Uint8 inctrl = SDL_GameControllerGetButton(NULL, NULL);
@@ -118,6 +117,46 @@ Uint32 LTimer::getTicks()
 
 LTimer capTimer, fpsTimer;
 
+
+//Texture class functions
+
+
+
+Texture::~Texture()
+{
+    SDL_DestroyTexture(texture);
+}
+void Texture::loadFile(char* path)
+{
+    cout << "Lill" <<endl;
+    img_surface = SDL_LoadBMP(path);
+    
+
+    SDL_SetColorKey(img_surface, SDL_TRUE, SDL_MapRGB(img_surface->format, 0, 0, 0 ) );
+
+    texture = SDL_CreateTextureFromSurface(renderer, img_surface);
+
+    width = img_surface->w;
+    height = img_surface->h;
+
+    SDL_FreeSurface(img_surface);
+}
+
+SDL_Texture* Texture::returnTexture()
+{
+    return texture;
+}
+
+int Texture::getWidth()
+{
+    return width;
+}
+
+int Texture::getHeight()
+{
+    return height;
+}
+
 void LoadWindow(char* name, int SCREEN_WIDTH, int SCREEN_HEIGHT)		//Initializes SDL
 {
     SDL_Init(SDL_INIT_EVERYTHING);
@@ -148,7 +187,6 @@ void LoadWindow(char* name, int SCREEN_WIDTH, int SCREEN_HEIGHT)		//Initializes 
 
 
     Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048);
-    //Mix_AllocateChannels(10);
 
     LTimer fpsTimer;
     fpsTimer.start();
@@ -236,38 +274,6 @@ bool done()		//Checks if the quit is pressed
         return false;
 }
 
-
-
-
-void Render(int fps)		//Renders the current stack
-{
-	//system("clear");
-    int Scr_fps = 1000/fps;
-    capTimer.start();
-    SDL_GetMouseState(&mouse_pos_x, &mouse_pos_y);
-    SDL_RenderPresent(renderer);
-    Mix_FreeMusic(music);
-    Mix_FreeChunk(audio);
-
-    float avgFPS = countedFrames/(fpsTimer.getTicks()/ 1000.f);
-    if( avgFPS > 2000000 )
-    {
-        avgFPS = 0;
-    }
-    //cout << avgFPS <<endl;
-    int frameTicks = capTimer.getTicks();
-
-
-    if(frameTicks <= Scr_fps)
-    {
-      //cout<<Scr_fps-frameTicks<<endl;
-      SDL_Delay(Scr_fps - frameTicks);
-    }
-     ++countedFrames;
-  //SDL_Delay(1000/fps);
-//   cout<<"fuck";
-}
-
 bool PointInRect(int x, int y, tuple <int,int,int,int> r1)
 {
     if(x >= get<0>(r1) && x <= get<0>(r1)+get<2>(r1) && y >= get<1>(r1) && y <= get<1>(r1)+get<3>(r1))
@@ -284,38 +290,46 @@ bool Col_Check(tuple <int,int,int,int> r1, tuple <int,int,int,int> r2)
         return false;
 }
 
+void Render(int fps)		//Renders the current stack
+{
+    int Scr_fps = 1000/fps;
+
+    SDL_GetMouseState(&mouse_pos_x, &mouse_pos_y);
+    SDL_RenderPresent(renderer);
+    capTimer.start();
+    ++countedFrames;
+    float avgFPS = countedFrames/(fpsTimer.getTicks()/ 1000.f);
+    int frameTicks = capTimer.getTicks();
+
+	cout << "\033[2J\033[1;1H";
+	cout << avgFPS <<endl;
+
+    if(frameTicks <= TPS)
+    {
+      //cout<<Scr_fps-frameTicks<<endl;
+      SDL_Delay(Scr_fps - frameTicks);
+    }
+
+  //SDL_Delay(1000/fps);
+//   cout<<"fuck";
+}
+
 void CloseWindow()	//Closes the window
 {
     //TTF_CloseFont(font);
-
-    Mix_CloseAudio();
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
+    SDL_DestroyTexture(texture);
+    //SDL_DestroySurface(surface);
     TTF_Quit();
     SDL_Quit();
-    Mix_Quit();
 }
 
-void PlayAudio(int channel, char* path)	//Audio player
+void PlayAudio(char* path)	//Audio player
 {
     audio = Mix_LoadWAV(path);
-    Mix_PlayChannel(channel, audio, 0);
-    audio = NULL;
-
-}
-
-void PlayMusic(int channel, char* path)
-{
-    music = Mix_LoadMUS(path);
-    if(Mix_PlayingMusic())
-    {
-        return;
-    }
-    else
-    {
-        Mix_PlayMusic(music,-1);
-    }
-    music = NULL;
+    Mix_PlayChannel(-1, audio, 0);
+    //Mix_FreeChunk(audio);
 }
 
 
@@ -402,69 +416,43 @@ int GetMouse_Y()
     return mouse_pos_y;
 }
 
-void LoadSprites(char* path, int x, int y)
+void LoadSprites(Texture *tex, int x, int y)
 {
     //Load Sprite
 
-    SDL_Surface *img_surface = SDL_LoadBMP(path);
+    texture = tex->returnTexture();
 
-
-    SDL_SetColorKey(img_surface, SDL_TRUE, SDL_MapRGB(img_surface->format, 0, 0, 0 ) );
-
-    texture = SDL_CreateTextureFromSurface(renderer, img_surface);
-
-    SDL_Rect sprite = {x, y, img_surface->w, img_surface->h};
-
-    SDL_FreeSurface(img_surface);
-
+    SDL_Rect sprite = {x,y,tex->getWidth(),tex->getHeight()};
 
     SDL_RenderCopy(renderer, texture, NULL, &sprite);
     //Render the sprite
-    SDL_DestroyTexture(texture);
 }
 
-void LoadSpritesScaled(char* path, int x, int y, int wd, int ht)
+void LoadSpritesScaled(Texture *tex, int x, int y, int wd, int ht)
 {
     //Load Sprite
 
-    SDL_Surface *img_surface = SDL_LoadBMP(path);
-
-    if(img_surface == NULL)
-        img_surface = SDL_LoadBMP("engine/exp.bmp");
-
-    SDL_SetColorKey(img_surface, SDL_TRUE, SDL_MapRGB(img_surface->format, 0, 0, 0 ) );
-
-    texture = SDL_CreateTextureFromSurface(renderer, img_surface);
+    texture = tex->returnTexture();
 
     SDL_Rect sprite = {x, y, wd, ht};
 
-    SDL_FreeSurface(img_surface);
-
-
     SDL_RenderCopy(renderer, texture, NULL, &sprite);
     //Render the sprite
-    SDL_DestroyTexture(texture);
+
 }
 
-void LoadSpritesCropped(char* path, int x ,int y, int wd, int ht)
+void LoadSpritesCropped(Texture *tex, int x ,int y,int stx,int sty, int wd, int ht)
 {
-	SDL_Surface *img_surface = SDL_LoadBMP(path);
-
-    if(img_surface == NULL)
-        img_surface = SDL_LoadBMP("alien_ship.bmp");
-
-    SDL_SetColorKey(img_surface, SDL_TRUE, SDL_MapRGB(img_surface->format, 0, 0, 0 ) );
-
-    texture = SDL_CreateTextureFromSurface(renderer, img_surface);
+	texture = tex->returnTexture();
 
     SDL_Rect sprite = {x, y, wd, ht};
 
-    SDL_FreeSurface(img_surface);
 
+    SDL_Rect clip = {stx,sty,wd,ht};
 
-    SDL_RenderCopy(renderer, texture, NULL, &sprite);
+    SDL_RenderCopy(renderer, texture, &clip, &sprite);
     //Render the sprite
-    SDL_DestroyTexture(texture);
+
 }
 
 void LoadSpritesFlipped(char* path, int x, int y, int wd, int ht,double degrees, int flip_val)

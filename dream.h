@@ -34,6 +34,24 @@ public:
 };
 #endif
 
+class Texture
+{
+public:
+    SDL_Texture *texture = NULL;
+    SDL_Surface *img_surface = NULL;
+    int width,height;
+    
+
+    void loadFile(char*);
+    SDL_Texture* returnTexture();
+
+    int getWidth();
+    int getHeight();
+
+
+    ~Texture();
+};
+
 void printCtr();
 void LoadWindow(char*, int, int);
 void DrawScreen();
@@ -45,20 +63,18 @@ void DrawCircle();
 void DrawTriangle(int, int, int, int, int);
 bool done();
 void Render(int);
-
+void PlayAudio(char*);
 void Delay(int);
 void WriteStringText(string, int,int,int);
-//void Ticks();
-void LoadSprites(char*, int, int);
-void LoadSpritesCropped(char*,int,int,int,double);
-void LoadSpritesScaled(char*, int, int ,int ,int);
+void Ticks();
+void LoadSprites(Texture*, int, int);
+void LoadSpritesCropped(Texture*,int,int,int,int,int,int);
+void LoadSpritesScaled(Texture*, int, int ,int ,int);
 void LoadSpritesFlipped(char*,int,int,int,int,double,int);
 
 
 bool Col_Check(tuple <int,int,int,int>, tuple <int,int,int,int>);
 
-void PlayAudio(int, char*);
-void PlayMusic(int, char*);
 
 int GetMouse_X();
 int GetMouse_Y();
