@@ -126,20 +126,24 @@ Texture::~Texture()
 {
     SDL_DestroyTexture(texture);
 }
-void Texture::loadFile(char* path)
+void Texture::loadFile(char *path)
 {
-    cout << "Lill" <<endl;
+    cout << path <<endl;
     img_surface = SDL_LoadBMP(path);
-    
+    cout << img_surface <<endl;
+    if(img_surface == NULL)
+        img_surface = SDL_LoadBMP("engine/exp.bmp");
+    cout << "Lill" <<endl;
 
-    SDL_SetColorKey(img_surface, SDL_TRUE, SDL_MapRGB(img_surface->format, 0, 0, 0 ) );
-
+    //SDL_SetColorKey(img_surface, SDL_TRUE, SDL_MapRGB(img_surface->format, 0, 0, 0 ) );
+    cout << "Lill" <<endl;
     texture = SDL_CreateTextureFromSurface(renderer, img_surface);
-
+    cout << "Lill" <<endl;
     width = img_surface->w;
     height = img_surface->h;
 
     SDL_FreeSurface(img_surface);
+    cout << "Lill" <<endl;
 }
 
 SDL_Texture* Texture::returnTexture()
@@ -163,7 +167,7 @@ void LoadWindow(char* name, int SCREEN_WIDTH, int SCREEN_HEIGHT)		//Initializes 
     TTF_Init();
     window = SDL_CreateWindow(name, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
 
-    if( !SDL_SetHint( SDL_HINT_RENDER_SCALE_QUALITY, "1" ) )
+    if( !SDL_SetHint( SDL_HINT_RENDER_SCALE_QUALITY, "0" ) )
     {
         printf( "WarningUint8*: Linear texture filtering not enabled!" );
     }
@@ -441,14 +445,19 @@ void LoadSpritesScaled(Texture *tex, int x, int y, int wd, int ht)
 
 }
 
-void LoadSpritesCropped(Texture *tex, int x ,int y,int stx,int sty, int wd, int ht)
+void LoadSpritesCropped(Texture *tex, int x ,int y,int wd,int ht, int stx,int sty,int swd,int sht)
 {
 	texture = tex->returnTexture();
+
+    if(wd == 0)
+        swd = wd;
+    if(ht == 0)
+        sht = ht;
 
     SDL_Rect sprite = {x, y, wd, ht};
 
 
-    SDL_Rect clip = {stx,sty,wd,ht};
+    SDL_Rect clip = {stx,sty,swd,sht};
 
     SDL_RenderCopy(renderer, texture, &clip, &sprite);
     //Render the sprite

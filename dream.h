@@ -68,7 +68,7 @@ void Delay(int);
 void WriteStringText(string, int,int,int);
 void Ticks();
 void LoadSprites(Texture*, int, int);
-void LoadSpritesCropped(Texture*,int,int,int,int,int,int);
+void LoadSpritesCropped(Texture*,int,int,int,int,int,int,int,int);
 void LoadSpritesScaled(Texture*, int, int ,int ,int);
 void LoadSpritesFlipped(char*,int,int,int,int,double,int);
 
