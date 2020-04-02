@@ -296,19 +296,18 @@ bool Col_Check(tuple <int,int,int,int> r1, tuple <int,int,int,int> r2)
 
 void Render(int fps)		//Renders the current stack
 {
-    int Scr_fps = 1000/fps;
-
-    SDL_GetMouseState(&mouse_pos_x, &mouse_pos_y);
-    SDL_RenderPresent(renderer);
     capTimer.start();
-    ++countedFrames;
+    int Scr_fps = 1000/fps;
     float avgFPS = countedFrames/(fpsTimer.getTicks()/ 1000.f);
+
+    //SDL_GetMouseState(&mouse_pos_x, &mouse_pos_y);
+    SDL_RenderPresent(renderer);
+    ++countedFrames;
     int frameTicks = capTimer.getTicks();
 
-	cout << "\033[2J\033[1;1H";
 	cout << avgFPS <<endl;
 
-    if(frameTicks <= TPS)
+    if(frameTicks <= Scr_fps)
     {
       //cout<<Scr_fps-frameTicks<<endl;
       SDL_Delay(Scr_fps - frameTicks);
@@ -321,9 +320,11 @@ void Render(int fps)		//Renders the current stack
 void CloseWindow()	//Closes the window
 {
     //TTF_CloseFont(font);
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
     SDL_DestroyTexture(texture);
+    SDL_DestroyRenderer(renderer);
+    //SDL_FreeSurface(surface);
+    SDL_DestroyWindow(window);
+    
     //SDL_DestroySurface(surface);
     TTF_Quit();
     SDL_Quit();
@@ -466,9 +467,7 @@ void LoadSpritesCropped(Texture *tex, int x ,int y,int wd,int ht, int stx,int st
 
 void LoadSpritesFlipped(char* path, int x, int y, int wd, int ht,double degrees, int flip_val)
 {
-    SDL_Surface *img_surface = SDL_LoadBMP(path);
-    if(img_surface == NULL)
-        img_surface = SDL_LoadBMP("engine/exp.bmp");
+   /*
 
     SDL_RendererFlip flip = SDL_FLIP_NONE;
 
@@ -500,5 +499,5 @@ void LoadSpritesFlipped(char* path, int x, int y, int wd, int ht,double degrees,
 
     SDL_RenderCopyEx(renderer, texture, NULL, &sprite,degrees,NULL,flip);
     //Render the sprite
-    SDL_DestroyTexture(texture);
+    SDL_DestroyTexture(texture);*/
 }

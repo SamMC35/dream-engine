@@ -32,7 +32,7 @@ public:
     int Get_Y();
     bool butDown(int);
 };
-#endif
+
 
 class Texture
 {
@@ -51,7 +51,7 @@ public:
 
     ~Texture();
 };
-
+#endif
 void printCtr();
 void LoadWindow(char*, int, int);
 void DrawScreen();
