@@ -39,8 +39,11 @@ class Texture
 public:
     SDL_Texture *texture = NULL;
     SDL_Surface *img_surface = NULL;
-    int width,height;
     
+    int width,height, swidth, sheight;
+    double degrees;
+    
+    int flip;
 
     void loadFile(char*);
     SDL_Texture* returnTexture();
@@ -48,7 +51,10 @@ public:
     int getWidth();
     int getHeight();
 
-
+    void RotateTexture(double);
+    void FlipTexture(int);
+    void ScaleTexture(int,int);
+    
     ~Texture();
 };
 #endif
@@ -57,19 +63,20 @@ void LoadWindow(char*, int, int);
 void DrawScreen();
 void CloseWindow();
 void DrawLine(int, int, int, int,  int, int, int);
-void DrawQuad(int, int, int, int, int);
+
 void DrawSurfaceQuad(int, int, int, int, int, int, int);
-void DrawCircle();
-void DrawTriangle(int, int, int, int, int);
+
 bool done();
 void Render(int);
+
 void PlayAudio(char*);
 void Delay(int);
 void WriteStringText(string, int,int,int);
 void Ticks();
+
 void LoadSprites(Texture*, int, int);
-void LoadSpritesCropped(Texture*,int,int,int,int,int,int,int,int);
-void LoadSpritesScaled(Texture*, int, int ,int ,int);
+void RenderSpritesCropped(Texture*,int,int,int,int,int,int);
+void RenderSprites(Texture*, int, int);
 void LoadSpritesFlipped(char*,int,int,int,int,double,int);
 
 

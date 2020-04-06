@@ -142,6 +142,12 @@ void Texture::loadFile(char *path)
     width = img_surface->w;
     height = img_surface->h;
 
+    swidth = width;
+    sheight = height;
+
+    degrees = 0;
+    flip = 0;
+
     SDL_FreeSurface(img_surface);
     cout << "Lill" <<endl;
 }
@@ -161,11 +167,34 @@ int Texture::getHeight()
     return height;
 }
 
+void Texture::RotateTexture(double degrees)
+{
+    this->degrees = degrees;
+}
+
+void Texture::FlipTexture(int flip)
+{
+    this->flip = flip;
+}
+
+void Texture::ScaleTexture(int swidth, int sheight)
+{
+    if(swidth == 0)
+        this->swidth = width;
+    else
+        this->swidth = swidth;
+
+     if(sheight == 0)
+        this->sheight = height;
+    else
+        this->sheight = sheight;
+}
+
 void LoadWindow(char* name, int SCREEN_WIDTH, int SCREEN_HEIGHT)		//Initializes SDL
 {
     SDL_Init(SDL_INIT_EVERYTHING);
     TTF_Init();
-    window = SDL_CreateWindow(name, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+    window = SDL_CreateWindow(name, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN|SDL_WINDOW_OPENGL);
 
     if( !SDL_SetHint( SDL_HINT_RENDER_SCALE_QUALITY, "0" ) )
     {
@@ -324,7 +353,7 @@ void CloseWindow()	//Closes the window
     SDL_DestroyRenderer(renderer);
     //SDL_FreeSurface(surface);
     SDL_DestroyWindow(window);
-    
+
     //SDL_DestroySurface(surface);
     TTF_Quit();
     SDL_Quit();
@@ -433,45 +462,25 @@ void LoadSprites(Texture *tex, int x, int y)
     //Render the sprite
 }
 
-void LoadSpritesScaled(Texture *tex, int x, int y, int wd, int ht)
+void RenderSprites(Texture *tex, int x, int y)
 {
     //Load Sprite
 
     texture = tex->returnTexture();
 
-    SDL_Rect sprite = {x, y, wd, ht};
+    SDL_Rect sprite = {x, y, tex->swidth, tex->sheight};
 
     SDL_RenderCopy(renderer, texture, NULL, &sprite);
     //Render the sprite
 
 }
 
-void LoadSpritesCropped(Texture *tex, int x ,int y,int wd,int ht, int stx,int sty,int swd,int sht)
+void RenderSpritesCropped(Texture *tex, int x ,int y,int stx,int sty,int swd,int sht)
 {
-	texture = tex->returnTexture();
-
-    if(wd == 0)
-        swd = wd;
-    if(ht == 0)
-        sht = ht;
-
-    SDL_Rect sprite = {x, y, wd, ht};
-
-
-    SDL_Rect clip = {stx,sty,swd,sht};
-
-    SDL_RenderCopy(renderer, texture, &clip, &sprite);
-    //Render the sprite
-
-}
-
-void LoadSpritesFlipped(char* path, int x, int y, int wd, int ht,double degrees, int flip_val)
-{
-   /*
 
     SDL_RendererFlip flip = SDL_FLIP_NONE;
 
-    switch(flip_val)
+    switch(tex->flip)
     {
         case 0:
             flip = SDL_FLIP_NONE;
@@ -488,6 +497,28 @@ void LoadSpritesFlipped(char* path, int x, int y, int wd, int ht,double degrees,
         default:
             break;
     }
+
+	texture = tex->returnTexture();
+
+    if(swd == 0)
+        swd = tex->swidth;
+    if(sht == 0)
+        sht = tex->sheight;
+
+    SDL_Rect sprite = {x, y, tex->swidth, tex->sheight};
+
+    SDL_Rect clip = {stx,sty,swd,sht};
+
+    SDL_RenderCopyEx(renderer, texture, &clip, &sprite,tex->degrees,NULL,flip);
+    //Render the sprite
+
+}
+
+void LoadSpritesFlipped(char* path, int x, int y, int wd, int ht,double degrees, int flip_val)
+{
+   /*
+
+
 
     SDL_SetColorKey(img_surface, SDL_TRUE, SDL_MapRGB(img_surface->format, 0, 0, 0 ) );
 
