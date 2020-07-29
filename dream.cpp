@@ -38,10 +38,7 @@ int countedFrames = 0;
 
 TTF_Font *font = NULL;
 
-int color[1][3]=
-{
-    {255,255,255}
-};
+
 
 int timer = 0;
 
@@ -130,12 +127,15 @@ void Texture::loadFile(char *path)
 {
     cout << path <<endl;
     img_surface = SDL_LoadBMP(path);
-    cout << img_surface <<endl;
+    //out << img_surface <<endl;
     if(img_surface == NULL)
+    {
+        cout << "NULL" <<endl;
         img_surface = SDL_LoadBMP("engine/exp.bmp");
+    }
     cout << "Lill" <<endl;
 
-    //SDL_SetColorKey(img_surface, SDL_TRUE, SDL_MapRGB(img_surface->format, 0, 0, 0 ) );
+    SDL_SetColorKey(img_surface, SDL_TRUE, SDL_MapRGB(img_surface->format, 0, 0, 0 ) );
     cout << "Lill" <<endl;
     texture = SDL_CreateTextureFromSurface(renderer, img_surface);
     cout << "Lill" <<endl;
@@ -201,7 +201,7 @@ void LoadWindow(char* name, int SCREEN_WIDTH, int SCREEN_HEIGHT)		//Initializes 
         printf( "WarningUint8*: Linear texture filtering not enabled!" );
     }
 
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     //cout << "SDL_NumJoysticks:" << SDL_NumJoysticks() <<endl;
     for(int i = 0; i < SDL_NumJoysticks(); i++)
     {
@@ -270,32 +270,6 @@ void DrawSurfaceQuad(int x, int y, int length, int breadth, int r, int g, int b)
     SDL_RenderFillRect(renderer, &rect);
 }
 
-void DrawQuad(int x, int y, int length,int breadth, int color_id)
-{
-    SDL_SetRenderDrawColor(renderer, color[color_id][0], color[color_id][1],
-    color[color_id][2], SDL_ALPHA_OPAQUE);
-
-    SDL_RenderDrawLine(renderer, x, y, x, y+breadth);
-    SDL_RenderDrawLine(renderer, x,y+breadth, x+length, y+breadth);
-    SDL_RenderDrawLine(renderer, x+length, y+breadth, x+length, y);
-    SDL_RenderDrawLine(renderer, x+length, y, x, y);
-
-   // SDL_RenderPresent(renderer);
-}
-
-
-
-void DrawTriangle(int x, int y, int length, int height, int color_id)
-{
-    SDL_SetRenderDrawColor(renderer, color[color_id][0],
-    color[color_id][1],color[color_id][2], SDL_ALPHA_OPAQUE);
-
-    SDL_RenderDrawLine(renderer, x, y, x+length, y);
-    SDL_RenderDrawLine(renderer, x, y, x+length/2, y+height);
-    SDL_RenderDrawLine(renderer, x+length, y, x+length/2, y+height);
-}
-
-
 bool done()		//Checks if the quit is pressed
 {
     SDL_PollEvent(&event);
@@ -334,7 +308,7 @@ void Render(int fps)		//Renders the current stack
     ++countedFrames;
     int frameTicks = capTimer.getTicks();
 
-	cout << avgFPS <<endl;
+	//cout << avgFPS <<endl;
 
     if(frameTicks <= Scr_fps)
     {
@@ -393,14 +367,14 @@ bool ctrlDown(int i, SDL_GameControllerButton ctrl)
     return (SDL_GameControllerGetButton(game_controller[i], ctrl));
 }
 
-void WriteStringText(string text, int size, int x, int y)
+void WriteStringText(string text, int size, int x, int y, Uint8 r, Uint8 g, Uint8 b)
 {
     int texW = 0;
     int texH = 0;
 
     font  =  TTF_OpenFont("8bit.ttf", size);
 
-    SDL_Color color = {255,255,255}; //white color
+    SDL_Color color = {r,g,b}; //white color
 
     surface = TTF_RenderText_Solid(font, text.c_str(), color);
 
@@ -427,7 +401,7 @@ void Ticks()
 
     time1 << "The time is: " << SDL_GetTicks();
 
-    WriteStringText(time1.str().c_str(), 14, 40, 60);
+    
 }
 
 void LoadImage(char* text, int x, int y,  int w, int h) //Image Loader

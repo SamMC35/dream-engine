@@ -3,6 +3,7 @@
 
 
 #include<SDL2/SDL.h>
+#include<SDL2/SDL_ttf.h>
 #include<string>
 #include<tuple>
 
@@ -57,6 +58,17 @@ public:
     
     ~Texture();
 };
+
+class Font 
+{
+public:
+
+    TTF_Font *font = NULL;
+
+    void setFont();
+
+    ~Font();
+};
 #endif
 void printCtr();
 void LoadWindow(char*, int, int);
@@ -71,7 +83,7 @@ void Render(int);
 
 void PlayAudio(char*);
 void Delay(int);
-void WriteStringText(string, int,int,int);
+void WriteStringText(string, int,int,int, Uint8, Uint8, Uint8);
 void Ticks();
 
 void LoadSprites(Texture*, int, int);
