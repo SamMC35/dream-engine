@@ -1,8 +1,8 @@
 #include<SDL2/SDL.h>
 #include<SDL2/SDL_mixer.h>
 #include<SDL2/SDL_ttf.h>
+#include<SDL2/SDL_gamecontroller.h>
 #include<iostream>
-#include<stdio.h>
 #include<cstdlib>
 #include<tuple>
 #include<map>
@@ -22,6 +22,7 @@ SDL_Renderer *renderer=  NULL;
 SDL_Surface *surface = NULL;
 SDL_Texture *texture =  NULL;
 SDL_GameController  *game_controller[2];
+SDL_Joystick *joystick[2];
 SDL_Event  event;
 SDL_Event event_joy;
 
@@ -45,7 +46,7 @@ int timer = 0;
 int mouse_pos_x,mouse_pos_y;
 
 std::map<int, bool> keypressed;
-
+std::map<int,bool> mousepressed;
 
 
 Timer::Timer()
@@ -133,12 +134,9 @@ void Texture::loadFile(char *path)
         cout << "NULL" <<endl;
         img_surface = SDL_LoadBMP("engine/exp.bmp");
     }
-    cout << "Lill" <<endl;
 
-    SDL_SetColorKey(img_surface, SDL_TRUE, SDL_MapRGB(img_surface->format, 0, 0, 0 ) );
-    cout << "Lill" <<endl;
+    SDL_SetColorKey(img_surface, SDL_TRUE, SDL_MapRGB(img_surface->format, 0, 255, 0 ) );
     texture = SDL_CreateTextureFromSurface(renderer, img_surface);
-    cout << "Lill" <<endl;
     width = img_surface->w;
     height = img_surface->h;
 
@@ -148,8 +146,7 @@ void Texture::loadFile(char *path)
     degrees = 0;
     flip = 0;
 
-    SDL_FreeSurface(img_surface);
-    cout << "Lill" <<endl;
+    SDL_FreeSurface(img_surface);    
 }
 
 SDL_Texture* Texture::returnTexture()
@@ -205,10 +202,13 @@ void LoadWindow(char* name, int SCREEN_WIDTH, int SCREEN_HEIGHT)		//Initializes 
     //cout << "SDL_NumJoysticks:" << SDL_NumJoysticks() <<endl;
     for(int i = 0; i < SDL_NumJoysticks(); i++)
     {
-        if(SDL_IsGameController(i))
+        if(1)
         {
+            cout << "SUPPROTED";
             game_controller[i] = SDL_GameControllerOpen(i);
+            joystick[i] = SDL_JoystickOpen(i);
         }
+        
     }
 
     if(SDL_INIT_EVERYTHING < 0 || window == NULL ||  renderer == NULL)
@@ -249,10 +249,10 @@ void DrawLine(int x1, int y1, int x2, int y2, int r, int g, int b)
     //SDL_RenderPresent(renderer);
 }
 
-void DrawSurfaceQuad(int x, int y, int length, int breadth, int r, int g, int b)
+void DrawSurfaceQuad(int x, int y, int length, int breadth, Color temp)
 {
-    SDL_SetRenderDrawColor(renderer, r, g,
-    b, SDL_ALPHA_OPAQUE);
+    SDL_SetRenderDrawColor(renderer, temp.r, temp.g,
+    temp.b, SDL_ALPHA_OPAQUE);
 
 
     SDL_Rect rect;		//Creates a SDL_Rectangle
@@ -275,7 +275,7 @@ bool done()		//Checks if the quit is pressed
     SDL_PollEvent(&event);
     if(event.type == SDL_QUIT)
         return true;
-    else if(keyDown(SDL_SCANCODE_E))
+    else if(keyDown(SDL_SCANCODE_ESCAPE))
         return true;
     else
         return false;
@@ -309,14 +309,14 @@ void Render(int fps)		//Renders the current stack
     int frameTicks = capTimer.getTicks();
 
 	//cout << avgFPS <<endl;
-
+    
     if(frameTicks <= Scr_fps)
     {
       //cout<<Scr_fps-frameTicks<<endl;
       SDL_Delay(Scr_fps - frameTicks);
-    }
+    }  
 
-  //SDL_Delay(1000/fps);
+    //SDL_Delay(Scr_fps);
 //   cout<<"fuck";
 }
 
@@ -333,6 +333,15 @@ void CloseWindow()	//Closes the window
     SDL_Quit();
 }
 
+bool musicPlaying()
+{
+    if(Mix_PlayingMusic())
+        return true;
+    else
+        return false;
+    
+}
+
 void PlayAudio(char* path)	//Audio player
 {
     audio = Mix_LoadWAV(path);
@@ -340,6 +349,12 @@ void PlayAudio(char* path)	//Audio player
     //Mix_FreeChunk(audio);
 }
 
+void DrawPixel(int x, int y, int r, int g, int b)                //Draws point
+{
+    SDL_SetRenderDrawColor(renderer, r, g,
+    b, SDL_ALPHA_OPAQUE);
+    SDL_RenderDrawPoint(renderer, x, y);            
+}
 
 bool keyDown(int key)  //Input methods
 {
@@ -367,14 +382,25 @@ bool ctrlDown(int i, SDL_GameControllerButton ctrl)
     return (SDL_GameControllerGetButton(game_controller[i], ctrl));
 }
 
-void WriteStringText(string text, int size, int x, int y, Uint8 r, Uint8 g, Uint8 b)
+bool joyDown(int i, int button)
+{
+    return (SDL_JoystickGetButton(joystick[i], button));
+}
+
+float axisState(int i, int axis)
+{
+	return(SDL_JoystickGetAxis(joystick[i],axis));
+}
+
+
+void WriteStringText(string text, int size, int x, int y, Color temp)
 {
     int texW = 0;
     int texH = 0;
 
     font  =  TTF_OpenFont("8bit.ttf", size);
 
-    SDL_Color color = {r,g,b}; //white color
+    SDL_Color color = {temp.r, temp.g, temp.b}; //white color
 
     surface = TTF_RenderText_Solid(font, text.c_str(), color);
 
@@ -411,16 +437,46 @@ void LoadImage(char* text, int x, int y,  int w, int h) //Image Loader
 
 void Delay(int seconds)
 {
-    SDL_Delay(seconds * 1000);
+    SDL_Delay(seconds);
+}
+
+bool isMouseClicked()
+{
+    SDL_PollEvent(&event);
+    if(event.type == SDL_MOUSEBUTTONDOWN)
+        return true;
+    else
+        return false;
+}
+
+bool clicked = false;
+
+bool isMouseAClicked()
+{
+    if(isMouseClicked())
+    {
+        if(!clicked)
+        {
+            clicked = true;
+            return true;
+        }
+        else
+            return false;
+    }
+
+    clicked = false;
+    return false;
 }
 
 int GetMouse_X()
 {
+    SDL_GetMouseState(&mouse_pos_x, &mouse_pos_y);
     return mouse_pos_x;
 }
 
 int GetMouse_Y()
 {
+    SDL_GetMouseState(&mouse_pos_x, &mouse_pos_y);
     return mouse_pos_y;
 }
 

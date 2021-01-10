@@ -4,6 +4,7 @@
 
 #include<SDL2/SDL.h>
 #include<SDL2/SDL_ttf.h>
+#include<SDL2/SDL_mixer.h>
 #include<string>
 #include<tuple>
 
@@ -34,6 +35,16 @@ public:
     bool butDown(int);
 };
 
+class Sound
+{
+public:
+    Mix_Music *temp = NULL;
+    int loops = 1;
+
+    void loadMusic(char*);
+    void playMusic();
+};
+
 
 class Texture
 {
@@ -55,8 +66,19 @@ public:
     void RotateTexture(double);
     void FlipTexture(int);
     void ScaleTexture(int,int);
+    void AlphaTexture(Uint8);
     
     ~Texture();
+};
+
+struct Vector2
+{
+	int x, y, w, h;
+};
+
+struct Color
+{
+	Uint8 r,g,b;
 };
 
 class Font 
@@ -75,15 +97,16 @@ void LoadWindow(char*, int, int);
 void DrawScreen();
 void CloseWindow();
 void DrawLine(int, int, int, int,  int, int, int);
+void DrawPixel(int, int , int , int ,int );
 
-void DrawSurfaceQuad(int, int, int, int, int, int, int);
+void DrawSurfaceQuad(int, int, int, int, Color);
 
 bool done();
 void Render(int);
 
 void PlayAudio(char*);
 void Delay(int);
-void WriteStringText(string, int,int,int, Uint8, Uint8, Uint8);
+void WriteStringText(string, int,int,int, Color);
 void Ticks();
 
 void LoadSprites(Texture*, int, int);
@@ -97,7 +120,14 @@ bool Col_Check(tuple <int,int,int,int>, tuple <int,int,int,int>);
 
 int GetMouse_X();
 int GetMouse_Y();
+bool isMouseClicked();
+bool isMouseAClicked();
 
 bool keyDown(int);
 bool keyPressedDown(int);
+
+bool musicPlaying();
+
 bool ctrlDown(int, SDL_GameControllerButton);
+bool joyDown(int,int);
+float axisState(int,int);
